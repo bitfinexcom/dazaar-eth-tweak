@@ -1,11 +1,11 @@
-const secp256k1 = require('secp256k1')
-const keccak = require('keccak')
+const keygen = require('eth-keygen')
 const checksum = require('eth-checksum')
 const etk = require('eth-tweak-key')
+const keccak = require('sha3-wasm').keccak256
 
 module.exports = class Tweaker {
   constructor (opts = {}) {
-    this.chainId = opts.chainId || undefined
+    this.chainId = opts.chainId
     this.publicKey = toBuffer(opts.publicKey)
     this.secretKey = toBuffer(opts.secretKey) || null
   }
@@ -18,13 +18,11 @@ module.exports = class Tweaker {
   tweakPublicData (seller, buyer) {
     let tweak = this.getTweak(seller, buyer)
 
-    for (let i = 0; i < 1e3; i++) {
-      const res = etk.tweakPublic(this.publicKey, tweak, this.chainId)
+    while (true) {
+      const res = etk.tweakPublic(Buffer.from(this.publicKey), tweak, this.chainId)
       if (etk.validatePublicKey(res.publicKey)) return res
       tweak = hash(tweak)
     }
-
-    throw new Error('Key not tweakable')
   }
 
   address (seller, buyer) {
@@ -38,14 +36,12 @@ module.exports = class Tweaker {
     sk = toBuffer(sk)
     let tweak = this.getTweak(seller, buyer)
 
-    for (let i = 0; i < 1e3; i++) {
-      const secretKey = etk.tweakPrivate(sk, tweak)
+    while (true) {
+      const secretKey = etk.tweakPrivate(Buffer.from(sk), tweak)
       const res = Tweaker.publicData(secretKey, this.chainId)
       if (etk.validatePublicKey(res.publicKey)) return { secretKey, ...res }
       tweak = hash(tweak)
     }
-
-    throw new Error('Key not tweakable')
   }
 
   publicData () {
@@ -59,14 +55,15 @@ module.exports = class Tweaker {
   }
 
   static publicData (sk, chainId) {
-    const p = Buffer.from(secp256k1.publicKeyCreate(toBuffer(sk), false))
-    const digest = hash(Buffer.from(p.slice(1))).slice(-20)
-    const address = checksum.encode(digest, chainId)
+    const { publicKey, address } = this.keygen(sk, chainId)
 
-    return {
-      publicKey: p,
-      address
-    }
+    return { publicKey, address }
+  }
+
+  static keygen (sk, chainId) {
+    const { address, publicKey, privateKey: secretKey } = keygen(toBuffer(sk), chainId)
+
+    return { address, publicKey, secretKey }
   }
 }
 
@@ -76,5 +73,5 @@ function toBuffer (sk) {
 }
 
 function hash (b) {
-  return keccak('keccak256').update(b).digest()
+  return keccak().update(b).digest()
 }
