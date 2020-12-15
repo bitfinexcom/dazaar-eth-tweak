@@ -5,9 +5,11 @@
   "main": "index.js",
   "dependencies": {
     "eth-checksum": "^1.0.1",
+    "eth-keygen": "^1.0.2",
     "eth-tweak-key": "^1.0.0",
     "keccak": "^3.0.1",
-    "secp256k1": "^4.0.2"
+    "secp256k1": "^4.0.2",
+    "sha3-wasm": "^1.0.0"
   },
   "devDependencies": {},
   "repository": {
