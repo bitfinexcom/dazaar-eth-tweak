@@ -16,7 +16,7 @@ module.exports = class Tweaker {
   }
 
   static validatePublicKey (pk) {
-    return eth.validatePublicKey(pk)
+    return etk.validatePublicKey(pk)
   }
 
   tweakPublicData (seller, buyer) {
