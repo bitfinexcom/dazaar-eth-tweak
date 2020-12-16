@@ -15,6 +15,10 @@ module.exports = class Tweaker {
     return hash(Buffer.from(meta))
   }
 
+  static validatePublicKey (pk) {
+    return eth.validatePublicKey(pk)
+  }
+
   tweakPublicData (seller, buyer) {
     let tweak = this.getTweak(seller, buyer)
 
