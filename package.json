@@ -1,6 +1,6 @@
 {
   "name": "@dazaar/eth-tweak",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Tweak an eth public key into a series of session keys for Dazaar payments",
   "main": "index.js",
   "dependencies": {
